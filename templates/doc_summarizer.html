@@ -224,6 +224,8 @@
             line-height: 1.7;
             color: #d8d8dc;
             white-space: pre-wrap;
+            overflow-wrap: break-word;
+            word-break: break-word;
             display: none;
         }
 
@@ -236,6 +238,48 @@
             font-size: 11px;
             color: #555;
             margin-top: 10px;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 14px 60px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+                letter-spacing: 3px;
+            }
+
+            .card {
+                padding: 16px 14px;
+            }
+
+            .dropzone {
+                padding: 20px 12px;
+            }
+
+            input[type="text"] {
+                font-size: 16px;
+                padding: 14px;
+            }
+
+            button {
+                padding: 14px;
+                font-size: 14px;
+                min-height: 46px;
+            }
+
+            .result {
+                padding: 16px;
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .header h1 {
+                font-size: 18px;
+                letter-spacing: 2px;
+            }
         }
     </style>
 </head>
@@ -276,19 +320,25 @@
     <script>
         const canvas = document.getElementById('starfield');
         const ctx = canvas.getContext('2d');
+        let isMobile = window.innerWidth < 768;
 
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
+            const newIsMobile = window.innerWidth < 768;
+            if (newIsMobile !== isMobile) {
+                isMobile = newIsMobile;
+                initStars();
+            }
         }
-        resize();
         window.addEventListener('resize', resize);
+        resize();
 
         let stars = [];
-        const numStars = 350;
 
         function initStars() {
             stars = [];
+            const numStars = isMobile ? 120 : 350;
             for (let i = 0; i < numStars; i++) {
                 stars.push({
                     x: (Math.random() - 0.5) * canvas.width,
@@ -329,7 +379,7 @@
 
                 if (s.isRed) {
                     ctx.strokeStyle = `rgba(255,20,20,${Math.min(alpha * 1.3, 1)})`;
-                    ctx.shadowBlur = 16;
+                    ctx.shadowBlur = isMobile ? 0 : 16;
                     ctx.shadowColor = 'rgba(255,0,60,1)';
                 } else {
                     ctx.strokeStyle = `rgba(255,255,255,${alpha})`;

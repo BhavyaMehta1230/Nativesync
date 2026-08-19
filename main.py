@@ -2,11 +2,13 @@ from fastapi import FastAPI, Request, UploadFile, File, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
-import requests
+import time
 from scraper import scrape_page_text
 from doc_parser import extract_text
 from yt_parser import get_transcript_text
-from groq_client import summarize_text, answer_question, summarize_transcript
+from groq_client import summarize_text, answer_question, summarize_transcript, triage_email
+from gmail_client import get_unread_emails
+
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 @app.get("/", response_class=HTMLResponse)
@@ -15,6 +17,9 @@ def landing(request: Request):
 @app.get("/web-summarizer", response_class=HTMLResponse)
 def web_summarizer_page(request: Request):
     return templates.TemplateResponse(request, "web_summarizer.html")
+@app.get("/email-triage", response_class=HTMLResponse)
+def email_triage_page(request: Request):
+    return templates.TemplateResponse(request, "email_triage.html")
 
 class SummarizeRequest(BaseModel):
     url: str
@@ -74,5 +79,46 @@ def api_summarize_youtube(req: YoutubeSummarizeRequest):
  
     except ValueError as e:
         return {"status": "failed", "error": str(e)}
+    except Exception as e:
+        return {"status": "failed", "error": str(e)}
+
+ 
+ 
+# --- ADD THIS ROUTE for the API that fetches + triages emails ---
+ 
+@app.get("/api/triage-emails")
+def api_triage_emails():
+    try:
+        emails = get_unread_emails(max_results=10)
+
+        results = []
+        for i, email in enumerate(emails):
+            try:
+                triage = triage_email(email["from"], email["subject"], email["body"])
+            except Exception as e:
+                triage = {
+                    "priority": "normal",
+                    "reason": "Could not analyze — try scanning again in a minute.",
+                    "draft_reply": "",
+                }
+
+            results.append({
+                "id": email["id"],
+                "from": email["from"],
+                "subject": email["subject"],
+                "snippet": email["snippet"],
+                "priority": triage["priority"],
+                "reason": triage["reason"],
+                "draft_reply": triage["draft_reply"],
+            })
+
+            if i < len(emails) - 1:
+                time.sleep(6)
+
+        priority_order = {"urgent": 0, "normal": 1, "low": 2}
+        results.sort(key=lambda e: priority_order.get(e["priority"], 1))
+
+        return {"status": "success", "emails": results}
+
     except Exception as e:
         return {"status": "failed", "error": str(e)}
