@@ -19,3 +19,5 @@ Thumbs.db
 # Google API credentials
 credentials.json
 token.json
+.vercel
+ generated_files/

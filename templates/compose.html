@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>NativeSync — Compose</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DotGothic16&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            background: #000;
+            overflow-x: hidden;
+        }
+
+        body {
+            color: #e8e8ec;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 30px 20px 80px;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        #starfield {
+            position: fixed;
+            inset: 0;
+            display: block;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .page {
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes riseIn {
+            from {
+                opacity: 0;
+                transform: translateY(28px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: riseIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .header h1 {
+            font-family: 'DotGothic16', monospace;
+            font-size: 26px;
+            letter-spacing: 4px;
+            color: #fff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .header h1 .accent {
+            color: #ff1a1a;
+            text-shadow: 0 0 15px rgba(255, 26, 26, 0.6);
+        }
+
+        .header a {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 11px;
+            color: #666;
+            text-decoration: none;
+            letter-spacing: 1px;
+        }
+
+        .header a:hover {
+            color: #ff1a1a;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(13, 13, 13, 0.85);
+            backdrop-filter: blur(6px);
+            border: 1px solid #1e1e1e;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+            animation: riseIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        textarea,
+        input {
+            font-family: 'JetBrains Mono', monospace;
+            background: #050505;
+            border: 1px solid #262626;
+            color: #e8e8ec;
+            border-radius: 5px;
+            padding: 12px 14px;
+            font-size: 13px;
+            flex: 1;
+            resize: vertical;
+        }
+
+        textarea:focus,
+        input:focus {
+            outline: none;
+            border-color: #ff1a1a;
+        }
+
+        button {
+            font-family: 'JetBrains Mono', monospace;
+            background: #ff1a1a;
+            color: #000;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            padding: 12px 22px;
+            font-size: 13px;
+            transition: background 0.15s ease, transform 0.1s ease;
+            white-space: nowrap;
+        }
+
+        button:hover {
+            background: #ff4444;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        button.secondary {
+            background: #1a1a1a;
+            color: #ccc;
+            border: 1px solid #2a2a2a;
+        }
+
+        button.secondary:hover {
+            background: #262626;
+        }
+
+        #status {
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            min-height: 16px;
+            margin: 16px 0;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #333;
+            border-top-color: #ff1a1a;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 6px;
+            vertical-align: -2px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .draft-panel {
+            display: none;
+        }
+
+        .draft-panel.visible {
+            display: block;
+            animation: riseIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        label {
+            display: block;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: #777;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            margin-top: 14px;
+        }
+
+        label:first-of-type {
+            margin-top: 0;
+        }
+
+        .draft-panel input,
+        .draft-panel textarea {
+            width: 100%;
+        }
+
+        .draft-panel textarea {
+            min-height: 160px;
+            line-height: 1.6;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .btn-row button {
+            flex: 1;
+        }
+
+        .example {
+            font-size: 11px;
+            color: #555;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="starfield"></canvas>
+
+    <div class="page">
+        <div class="header">
+            <h1>COMPOSE <span class="accent">MAIL</span></h1>
+            <a href="/">&lt; back to NativeSync</a>
+            <div id="accountRow" style="margin-top: 10px; font-size: 11px; color: #555;">
+                <span id="currentAccount">checking account...</span>
+                &nbsp;·&nbsp;
+                <a href="#" onclick="switchAccount(); return false;"
+                    style="color: #ff1a1a; text-decoration: none;">switch account</a>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="card">
+                <label>Tell it what to send and to whom</label>
+                <div class="input-row">
+                    <textarea id="instructionInput" rows="2"
+                        placeholder="e.g. send a joke about programmers to bob@example.com"></textarea>
+                </div>
+                <div class="example">Include the recipient's email address in your instruction — it'll be pulled out
+                    automatically.</div>
+                <div class="btn-row">
+                    <button id="draftBtn" onclick="generateDraft()">Draft it</button>
+                </div>
+            </div>
+
+            <p id="status"></p>
+
+            <div class="card draft-panel" id="draftPanel">
+                <label>To</label>
+                <input type="text" id="toField">
+
+                <label>Subject</label>
+                <input type="text" id="subjectField">
+
+                <label>Body</label>
+                <textarea id="bodyField"></textarea>
+
+                <div class="btn-row">
+                    <button class="secondary" onclick="regenerateDraft()">Redo draft</button>
+                    <button onclick="sendEmail()" id="sendBtn">Send it</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        let stars = [];
+        const numStars = 350;
+
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < numStars; i++) {
+                stars.push({
+                    x: (Math.random() - 0.5) * canvas.width,
+                    y: (Math.random() - 0.5) * canvas.height,
+                    z: Math.random() * canvas.width,
+                    isRed: Math.random() < 0.35
+                });
+            }
+        }
+        initStars();
+
+        function draw() {
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+
+            for (let s of stars) {
+                const prevZ = s.z;
+                s.z -= 6;
+                if (s.z <= 0) {
+                    s.x = (Math.random() - 0.5) * canvas.width;
+                    s.y = (Math.random() - 0.5) * canvas.height;
+                    s.z = canvas.width;
+                    s.isRed = Math.random() < 0.35;
+                    continue;
+                }
+                const sx = (s.x / s.z) * canvas.width + cx;
+                const sy = (s.y / s.z) * canvas.width + cy;
+                const px = (s.x / prevZ) * canvas.width + cx;
+                const py = (s.y / prevZ) * canvas.width + cy;
+                const size = (1 - s.z / canvas.width) * 1.8;
+                const alpha = (1 - s.z / canvas.width) * 0.7;
+
+                if (s.isRed) {
+                    ctx.strokeStyle = `rgba(255,20,20,${Math.min(alpha * 1.3, 1)})`;
+                    ctx.shadowBlur = 16;
+                    ctx.shadowColor = 'rgba(255,0,60,1)';
+                } else {
+                    ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+                    ctx.shadowBlur = 0;
+                    ctx.shadowColor = 'transparent';
+                }
+                ctx.lineWidth = size;
+                ctx.beginPath();
+                ctx.moveTo(px, py);
+                ctx.lineTo(sx, sy);
+                ctx.stroke();
+            }
+            ctx.shadowBlur = 0;
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        function setStatus(html) {
+            document.getElementById("status").innerHTML = html;
+        }
+
+        async function loadCurrentAccount() {
+            const el = document.getElementById("currentAccount");
+            try {
+                const res = await fetch("/api/current-account");
+                const data = await res.json();
+                if (data.status === "success" && data.email) {
+                    el.textContent = "sending as " + data.email;
+                } else {
+                    el.textContent = "not logged in yet";
+                }
+            } catch (e) {
+                el.textContent = "not logged in yet";
+            }
+        }
+        loadCurrentAccount();
+
+        async function switchAccount() {
+            setStatus("Switching account...");
+            try {
+                await fetch("/api/switch-account", { method: "POST" });
+                setStatus("Account cleared. The next draft or send will ask you to log in again — pick the account you want.");
+                document.getElementById("currentAccount").textContent = "not logged in yet";
+            } catch (e) {
+                setStatus("Could not switch account.");
+            }
+        }
+
+        async function generateDraft() {
+            const instruction = document.getElementById("instructionInput").value.trim();
+            const btn = document.getElementById("draftBtn");
+            const panel = document.getElementById("draftPanel");
+
+            if (!instruction) {
+                setStatus("Type what you want to send first.");
+                return;
+            }
+
+            btn.disabled = true;
+            panel.classList.remove("visible");
+            setStatus('<span class="spinner"></span>Drafting...');
+
+            try {
+                const res = await fetch("/api/compose-draft", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ instruction: instruction })
+                });
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    document.getElementById("toField").value = data.draft.to || "";
+                    document.getElementById("subjectField").value = data.draft.subject || "";
+                    document.getElementById("bodyField").value = data.draft.body || "";
+                    panel.classList.add("visible");
+
+                    if (!data.draft.to) {
+                        setStatus("Draft ready — but no email address was found. Fill in the 'To' field manually.");
+                    } else {
+                        setStatus("Draft ready. Review it below, then send.");
+                    }
+                } else {
+                    setStatus("Failed: " + (data.error || "unknown error"));
+                }
+            } catch (e) {
+                setStatus("Something went wrong generating the draft.");
+            }
+
+            btn.disabled = false;
+        }
+
+        function regenerateDraft() {
+            generateDraft();
+        }
+
+        async function sendEmail() {
+            const to = document.getElementById("toField").value.trim();
+            const subject = document.getElementById("subjectField").value.trim();
+            const body = document.getElementById("bodyField").value.trim();
+            const sendBtn = document.getElementById("sendBtn");
+
+            if (!to || !to.includes("@")) {
+                setStatus("Enter a valid recipient email address first.");
+                return;
+            }
+
+            sendBtn.disabled = true;
+            setStatus('<span class="spinner"></span>Sending...');
+
+            try {
+                const res = await fetch("/api/send-email", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ to: to, subject: subject, body: body })
+                });
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    setStatus("Sent to " + to + ".");
+                } else {
+                    setStatus("Failed to send: " + (data.error || "unknown error"));
+                }
+            } catch (e) {
+                setStatus("Something went wrong sending the email.");
+            }
+
+            sendBtn.disabled = false;
+        }
+    </script>
+</body>
+
+</html>

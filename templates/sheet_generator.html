@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>NativeSync — Spreadsheet Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DotGothic16&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            background: #000;
+            overflow-x: hidden;
+        }
+
+        body {
+            color: #e8e8ec;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 30px 20px 80px;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        #starfield {
+            position: fixed;
+            inset: 0;
+            display: block;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .page {
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes riseIn {
+            from {
+                opacity: 0;
+                transform: translateY(28px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: riseIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .header h1 {
+            font-family: 'DotGothic16', monospace;
+            font-size: 26px;
+            letter-spacing: 4px;
+            color: #fff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .header h1 .accent {
+            color: #ff1a1a;
+            text-shadow: 0 0 15px rgba(255, 26, 26, 0.6);
+        }
+
+        .header a {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 11px;
+            color: #666;
+            text-decoration: none;
+            letter-spacing: 1px;
+        }
+
+        .header a:hover {
+            color: #ff1a1a;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(13, 13, 13, 0.85);
+            backdrop-filter: blur(6px);
+            border: 1px solid #1e1e1e;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+            animation: riseIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        label {
+            display: block;
+            font-size: 10px;
+            letter-spacing: 2px;
+            color: #777;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            margin-top: 16px;
+        }
+
+        label:first-of-type {
+            margin-top: 0;
+        }
+
+        textarea,
+        input {
+            width: 100%;
+            font-family: 'JetBrains Mono', monospace;
+            background: #050505;
+            border: 1px solid #262626;
+            color: #e8e8ec;
+            border-radius: 5px;
+            padding: 12px 14px;
+            font-size: 13px;
+            resize: vertical;
+        }
+
+        textarea:focus,
+        input:focus {
+            outline: none;
+            border-color: #ff1a1a;
+        }
+
+        textarea::placeholder,
+        input::placeholder {
+            color: #4a4a4a;
+        }
+
+        button {
+            font-family: 'JetBrains Mono', monospace;
+            background: #ff1a1a;
+            color: #000;
+            font-weight: 700;
+            letter-spacing: 1px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            padding: 12px 22px;
+            font-size: 13px;
+            width: 100%;
+            margin-top: 18px;
+            transition: background 0.15s ease, transform 0.1s ease;
+        }
+
+        button:hover {
+            background: #ff4444;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        #status {
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            min-height: 16px;
+            margin: 16px 0;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #333;
+            border-top-color: #ff1a1a;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            margin-right: 6px;
+            vertical-align: -2px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .result {
+            display: none;
+        }
+
+        .result.visible {
+            display: block;
+            animation: riseIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .sheet-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            margin-bottom: 16px;
+        }
+
+        th {
+            background: rgba(255, 26, 26, 0.12);
+            color: #ff4444;
+            text-align: left;
+            padding: 8px 10px;
+            border: 1px solid #1e1e1e;
+            font-weight: 700;
+        }
+
+        td {
+            padding: 8px 10px;
+            border: 1px solid #1e1e1e;
+            color: #ccc;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin-bottom: 16px;
+        }
+
+        .download-btn {
+            display: block;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .example {
+            font-size: 11px;
+            color: #555;
+            margin-top: 8px;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 16px;
+            font-size: 12px;
+            color: #999;
+            cursor: pointer;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .checkbox-row input {
+            width: 16px;
+            height: 16px;
+            accent-color: #ff1a1a;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="starfield"></canvas>
+
+    <div class="page">
+        <div class="header">
+            <h1>SPREADSHEET <span class="accent">GENERATOR</span></h1>
+            <a href="/">&lt; back to NativeSync</a>
+        </div>
+
+        <div class="container">
+            <div class="card">
+                <label>What should the spreadsheet contain? (optional if pasting data below)</label>
+                <textarea id="instructionInput" rows="2"
+                    placeholder="e.g. a monthly budget tracker with income and expense categories"></textarea>
+
+                <label>Paste existing data to format (optional if giving an instruction above)</label>
+                <textarea id="sourceInput" rows="6"
+                    placeholder="Paste raw data — CSV-like text, a messy list, anything you want turned into a clean table"></textarea>
+                <div class="example">Use one or both fields — an instruction alone builds a table from scratch, pasted
+                    data alone gets organized into columns, or combine both for specific formatting on your own data.
+                    Real-time data is pulled from the web automatically when needed.</div>
+
+                <button id="generateBtn" onclick="generateSheet()">Generate Spreadsheet</button>
+            </div>
+
+            <p id="status"></p>
+
+            <div class="card result" id="resultCard">
+                <div class="sheet-name" id="sheetName"></div>
+                <div class="table-wrap">
+                    <table id="dataTable"></table>
+                </div>
+                <a class="download-btn" id="downloadLink" href="#" download>
+                    <button style="margin-top: 0;">Download .xlsx</button>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        resize();
+        window.addEventListener('resize', resize);
+
+        let stars = [];
+        const numStars = 350;
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < numStars; i++) {
+                stars.push({
+                    x: (Math.random() - 0.5) * canvas.width,
+                    y: (Math.random() - 0.5) * canvas.height,
+                    z: Math.random() * canvas.width,
+                    isRed: Math.random() < 0.35
+                });
+            }
+        }
+        initStars();
+
+        function draw() {
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2, cy = canvas.height / 2;
+            for (let s of stars) {
+                const prevZ = s.z;
+                s.z -= 6;
+                if (s.z <= 0) {
+                    s.x = (Math.random() - 0.5) * canvas.width;
+                    s.y = (Math.random() - 0.5) * canvas.height;
+                    s.z = canvas.width;
+                    s.isRed = Math.random() < 0.35;
+                    continue;
+                }
+                const sx = (s.x / s.z) * canvas.width + cx;
+                const sy = (s.y / s.z) * canvas.width + cy;
+                const px = (s.x / prevZ) * canvas.width + cx;
+                const py = (s.y / prevZ) * canvas.width + cy;
+                const size = (1 - s.z / canvas.width) * 1.8;
+                const alpha = (1 - s.z / canvas.width) * 0.7;
+                if (s.isRed) {
+                    ctx.strokeStyle = `rgba(255,20,20,${Math.min(alpha * 1.3, 1)})`;
+                    ctx.shadowBlur = 16;
+                    ctx.shadowColor = 'rgba(255,0,60,1)';
+                } else {
+                    ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
+                    ctx.shadowBlur = 0;
+                    ctx.shadowColor = 'transparent';
+                }
+                ctx.lineWidth = size;
+                ctx.beginPath();
+                ctx.moveTo(px, py);
+                ctx.lineTo(sx, sy);
+                ctx.stroke();
+            }
+            ctx.shadowBlur = 0;
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        function setStatus(html) { document.getElementById("status").innerHTML = html; }
+
+        function escapeHtml(str) {
+            const div = document.createElement("div");
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        async function generateSheet() {
+            const instruction = document.getElementById("instructionInput").value.trim();
+            const sourceText = document.getElementById("sourceInput").value.trim();
+            const btn = document.getElementById("generateBtn");
+            const resultCard = document.getElementById("resultCard");
+
+            if (!instruction && !sourceText) {
+                setStatus("Give an instruction or paste some data first.");
+                return;
+            }
+
+            btn.disabled = true;
+            resultCard.classList.remove("visible");
+            setStatus('<span class="spinner"></span>Looking up current info and building your spreadsheet...');
+
+            try {
+                const res = await fetch("/api/generate-sheet", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ instruction: instruction, source_text: sourceText, use_web: true })
+                });
+                const data = await res.json();
+
+                if (data.status === "success") {
+                    document.getElementById("sheetName").textContent = data.sheet_name;
+
+                    const table = document.getElementById("dataTable");
+                    table.innerHTML = "";
+
+                    const thead = document.createElement("thead");
+                    const headRow = document.createElement("tr");
+                    data.headers.forEach(h => {
+                        const th = document.createElement("th");
+                        th.textContent = h;
+                        headRow.appendChild(th);
+                    });
+                    thead.appendChild(headRow);
+                    table.appendChild(thead);
+
+                    const tbody = document.createElement("tbody");
+                    data.rows.forEach(row => {
+                        const tr = document.createElement("tr");
+                        row.forEach(cell => {
+                            const td = document.createElement("td");
+                            td.textContent = cell;
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+                    table.appendChild(tbody);
+
+                    document.getElementById("downloadLink").href = "/download/" + data.filename;
+                    resultCard.classList.add("visible");
+                    setStatus("Done.");
+                } else {
+                    setStatus("Failed: " + (data.error || "unknown error"));
+                }
+            } catch (e) {
+                setStatus("Something went wrong generating the spreadsheet.");
+            }
+
+            btn.disabled = false;
+        }
+    </script>
+</body>
+
+</html>

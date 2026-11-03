@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>NativeSync — Photo EXIF Inspector</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DotGothic16&family=JetBrains+Mono:wght@400;500;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            background: #000;
+            overflow-x: hidden;
+        }
+
+        body {
+            color: #e8e8ec;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 30px 20px 80px;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        #starfield {
+            position: fixed;
+            inset: 0;
+            display: block;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .page {
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes riseIn {
+            from {
+                opacity: 0;
+                transform: translateY(28px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: riseIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .header h1 {
+            font-family: 'DotGothic16', monospace;
+            font-size: 26px;
+            letter-spacing: 4px;
+            color: #fff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+        }
+
+        .header h1 .accent {
+            color: #ff1a1a;
+            text-shadow: 0 0 15px rgba(255, 26, 26, 0.6);
+        }
+
+        .header a {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 11px;
+            color: #666;
+            text-decoration: none;
+            letter-spacing: 1px;
+        }
+
+        .header a:hover {
+            color: #ff1a1a;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(13, 13, 13, 0.85);
+            backdrop-filter: blur(6px);
+            border: 1px solid #1e1e1e;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+            animation: riseIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+            animation-delay: 0.1s;
+        }
+
+        .drop {
+            display: block;
+            border: 1px dashed #333;
+            border-radius: 6px;
+            padding: 28px 16px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 13px;
+            color: #888;
+            transition: border-color 0.15s ease, color 0.15s ease;
+        }
+
+        .drop:hover {
+            border-color: #ff1a1a;
+            color: #fff;
+        }
+
+        .example {
+            font-size: 11px;
+            color: #555;
+            margin-top: 10px;
+        }
+
+        #status {
+            text-align: center;
+            font-size: 12px;
+            color: #888;
+            min-height: 16px;
+            margin: 16px 0;
+        }
+
+        .result {
+            display: none;
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(6px);
+            border: 1px solid #1a1a1a;
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        .result.visible {
+            display: block;
+            animation: riseIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 11px;
+            letter-spacing: 2px;
+            padding: 5px 12px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            border: 1px solid;
+        }
+
+        .badge.ok {
+            color: #4cd9a0;
+            border-color: rgba(76, 217, 160, 0.4);
+        }
+
+        .badge.warn {
+            color: #ff4444;
+            border-color: rgba(255, 26, 26, 0.5);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        td {
+            padding: 9px 0;
+            border-bottom: 1px solid #1a1a1a;
+            vertical-align: top;
+            overflow-wrap: break-word;
+            word-break: break-word;
+        }
+
+        td:first-child {
+            color: #777;
+            width: 38%;
+            padding-right: 14px;
+        }
+
+        .map-btn {
+            display: inline-block;
+            margin-top: 18px;
+            background: #ff1a1a;
+            color: #000;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-decoration: none;
+            border-radius: 5px;
+            padding: 12px 22px;
+            font-size: 13px;
+            transition: background 0.15s ease;
+        }
+
+        .map-btn:hover {
+            background: #ff4444;
+        }
+
+        .map-frame {
+            width: 100%;
+            height: 320px;
+            border: 1px solid #1e1e1e;
+            border-radius: 6px;
+            margin-top: 18px;
+            display: block;
+        }
+
+        .note {
+            font-size: 11px;
+            color: #555;
+            margin-top: 16px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 14px 60px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+                letter-spacing: 3px;
+            }
+
+            .card,
+            .result {
+                padding: 16px 14px;
+            }
+
+            .map-btn {
+                display: block;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="starfield"></canvas>
+    <div class="page">
+        <div class="header">
+            <h1>PHOTO <span class="accent">EXIF</span></h1>
+            <a href="/">&lt; back to NativeSync</a>
+        </div>
+        <div class="container">
+            <div class="card">
+                <label class="drop" for="fileInput" id="dropText">Click to choose a photo</label>
+                <input type="file" id="fileInput" accept="image/*" hidden>
+                <div class="example">See the device that took the photo and where it was shot</div>
+            </div>
+            <p id="status"></p>
+            <div id="result" class="result">
+                <span id="badge" class="badge"></span>
+                <table id="rows"></table>
+                <div id="mapSlot"></div>
+                <p class="note">Runs fully in your browser. The photo is never uploaded. If the photo has GPS, the map
+                    loads from Google using only those coordinates.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.umd.js"></script>
+    <script>
+        // --- starfield (same as other pages) ---
+        const canvas = document.getElementById('starfield');
+        const ctx = canvas.getContext('2d');
+        let isMobile = window.innerWidth < 768;
+        let stars = [];
+        function initStars() {
+            stars = [];
+            const n = isMobile ? 120 : 350;
+            for (let i = 0; i < n; i++) stars.push({ x: (Math.random() - 0.5) * canvas.width, y: (Math.random() - 0.5) * canvas.height, z: Math.random() * canvas.width, isRed: Math.random() < 0.35 });
+        }
+        function resize() {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            const m = window.innerWidth < 768;
+            if (m !== isMobile) { isMobile = m; initStars(); }
+        }
+        window.addEventListener('resize', resize);
+        resize(); initStars();
+        function draw() {
+            ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const cx = canvas.width / 2, cy = canvas.height / 2;
+            for (let s of stars) {
+                const prevZ = s.z; s.z -= 6;
+                if (s.z <= 0) { s.x = (Math.random() - 0.5) * canvas.width; s.y = (Math.random() - 0.5) * canvas.height; s.z = canvas.width; s.isRed = Math.random() < 0.35; continue; }
+                const sx = (s.x / s.z) * canvas.width + cx, sy = (s.y / s.z) * canvas.width + cy;
+                const px = (s.x / prevZ) * canvas.width + cx, py = (s.y / prevZ) * canvas.width + cy;
+                const size = (1 - s.z / canvas.width) * 1.8, alpha = (1 - s.z / canvas.width) * 0.7;
+                if (s.isRed) { ctx.strokeStyle = `rgba(255,20,20,${Math.min(alpha * 1.3, 1)})`; ctx.shadowBlur = isMobile ? 0 : 16; ctx.shadowColor = 'rgba(255,0,60,1)'; }
+                else { ctx.strokeStyle = `rgba(255,255,255,${alpha})`; ctx.shadowBlur = 0; ctx.shadowColor = 'transparent'; }
+                ctx.lineWidth = size; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(sx, sy); ctx.stroke();
+            }
+            ctx.shadowBlur = 0;
+            requestAnimationFrame(draw);
+        }
+        draw();
+
+        // --- EXIF logic (ported from TrustGuard) ---
+        const $ = id => document.getElementById(id);
+
+        $('fileInput').addEventListener('change', async e => {
+            const file = e.target.files[0];
+            if (!file) return;
+            $('dropText').textContent = file.name;
+            $('status').textContent = 'Reading metadata...';
+            $('result').classList.remove('visible');
+
+            let d = null;
+            try { d = await exifr.parse(file, { gps: true, tiff: true, exif: true }); } catch (_) { }
+
+            const has = d && Object.keys(d).length > 0;
+            const software = d?.Software || 'None detected';
+            const edited = /photoshop|gimp|pixlr|canva|adobe|lightroom/i.test(software);
+            const hasGps = d && typeof d.latitude === 'number' && typeof d.longitude === 'number';
+
+            const rows = {
+                'Make': d?.Make || '—',
+                'Model': d?.Model || '—',
+                'Lens': d?.LensModel || '—',
+                'Software': software,
+                'Taken on': d?.DateTimeOriginal ? new Date(d.DateTimeOriginal).toLocaleString() : '—',
+                'Resolution': d?.ExifImageWidth ? `${d.ExifImageWidth} x ${d.ExifImageHeight} px` : '—',
+                'GPS': hasGps ? `${d.latitude.toFixed(6)}, ${d.longitude.toFixed(6)}` : 'Not found'
+            };
+
+            const table = $('rows');
+            table.replaceChildren();
+            for (const [k, v] of Object.entries(rows)) {
+                const tr = table.insertRow();
+                tr.insertCell().textContent = k;
+                tr.insertCell().textContent = String(v); // textContent: EXIF strings are untrusted
+            }
+
+            const badge = $('badge');
+            if (!has) { badge.textContent = 'NO METADATA (STRIPPED?)'; badge.className = 'badge warn'; }
+            else if (edited) { badge.textContent = 'EDITED: ' + software.toUpperCase(); badge.className = 'badge warn'; }
+            else { badge.textContent = 'ORIGINAL CAMERA METADATA'; badge.className = 'badge ok'; }
+
+            const slot = $('mapSlot');
+            slot.replaceChildren();
+            if (hasGps) {
+                const a = document.createElement('a');
+                a.className = 'map-btn';
+                a.target = '_blank';
+                a.rel = 'noopener';
+                a.href = `https://www.google.com/maps?q=${d.latitude},${d.longitude}`;
+                a.textContent = 'Open in Google Maps';
+                const frame = document.createElement('iframe');
+                frame.className = 'map-frame';
+                frame.loading = 'lazy';
+                frame.referrerPolicy = 'no-referrer';
+                frame.src = `https://maps.google.com/maps?q=${d.latitude},${d.longitude}&z=17&output=embed`;
+                slot.appendChild(frame);
+                slot.appendChild(a);
+            } else {
+                const p = document.createElement('p');
+                p.className = 'note';
+                p.textContent = 'No GPS in this file. Android: open Camera > Settings and turn on Location tags (also turn Location on in phone settings). iPhone: Settings > Privacy & Security > Location Services > Camera > While Using the App, and tap Options > Location when picking the photo. WhatsApp/Instagram strip it.';
+                slot.appendChild(p);
+            }
+
+            $('status').textContent = 'Done.';
+            $('result').classList.add('visible');
+        });
+    </script>
+</body>
+
+</html>

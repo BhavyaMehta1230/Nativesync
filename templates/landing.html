@@ -17,18 +17,8 @@
         html,
         body {
             width: 100%;
-            height: 100%;
             background: #000;
             overflow-x: hidden;
-        }
-
-        body.launched {
-            overflow-y: auto;
-        }
-
-        body:not(.launched) {
-            overflow: hidden;
-            height: 100%;
         }
 
         #starfield {
@@ -40,187 +30,254 @@
             z-index: 0;
         }
 
-        .scene {
+        .page {
             position: relative;
             z-index: 1;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-
-        .hero {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            padding-top: 42vh;
-            transition: padding-top 0.9s cubic-bezier(0.65, 0, 0.35, 1);
-        }
-
-        body.launched .hero {
-            padding-top: 48px;
+            padding: 48px 20px 80px;
         }
 
         .title {
             font-family: 'DotGothic16', monospace;
-            font-size: 64px;
-            color: #fff;
-            letter-spacing: 12px;
-            text-shadow: 0 0 15px rgba(255, 255, 255, 0.9), 0 0 35px rgba(255, 255, 255, 0.6), 0 0 60px rgba(255, 255, 255, 0.35);
-            animation: glowWhite 2.4s ease-in-out infinite;
-            transition: font-size 0.9s cubic-bezier(0.65, 0, 0.35, 1), letter-spacing 0.9s cubic-bezier(0.65, 0, 0.35, 1);
-        }
-
-        body.launched .title {
-            font-size: 28px;
+            font-size: 36px;
             letter-spacing: 6px;
+            color: #fff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
         }
 
         .title .accent {
             color: #ff1a1a;
-            text-shadow: 0 0 15px rgba(255, 26, 26, 0.9), 0 0 35px rgba(255, 26, 26, 0.7), 0 0 60px rgba(255, 26, 26, 0.4);
-            animation: glowRed 2.4s ease-in-out infinite;
-        }
-
-        @keyframes glowWhite {
-
-            0%,
-            100% {
-                text-shadow: 0 0 15px rgba(255, 255, 255, 0.9), 0 0 35px rgba(255, 255, 255, 0.6), 0 0 60px rgba(255, 255, 255, 0.35);
-            }
-
-            50% {
-                text-shadow: 0 0 22px rgba(255, 255, 255, 1), 0 0 50px rgba(255, 255, 255, 0.8), 0 0 80px rgba(255, 255, 255, 0.5);
-            }
-        }
-
-        @keyframes glowRed {
-
-            0%,
-            100% {
-                text-shadow: 0 0 15px rgba(255, 26, 26, 0.9), 0 0 35px rgba(255, 26, 26, 0.7), 0 0 60px rgba(255, 26, 26, 0.4);
-            }
-
-            50% {
-                text-shadow: 0 0 22px rgba(255, 26, 26, 1), 0 0 50px rgba(255, 26, 26, 0.9), 0 0 80px rgba(255, 26, 26, 0.6);
-            }
+            text-shadow: 0 0 15px rgba(255, 26, 26, 0.7);
         }
 
         .subtitle {
             font-family: 'DotGothic16', monospace;
-            color: #888;
-            font-size: 12px;
-            letter-spacing: 8px;
-            margin-top: 18px;
-            transition: opacity 0.5s ease, margin 0.9s cubic-bezier(0.65, 0, 0.35, 1);
-        }
-
-        body.launched .subtitle {
-            opacity: 0;
-            margin-top: 6px;
-            height: 0;
-            overflow: hidden;
-        }
-
-        .launch-btn {
-            margin-top: 48px;
-            padding: 16px 48px;
-            background: #ffffff;
-            border: none;
-            color: #000;
-            font-family: 'DotGothic16', monospace;
-            font-size: 15px;
-            letter-spacing: 6px;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, margin 0.9s cubic-bezier(0.65, 0, 0.35, 1), padding 0.9s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.5s ease;
-        }
-
-        .launch-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
-        }
-
-        body.launched .launch-btn {
-            margin-top: 20px;
-            padding: 9px 28px;
+            color: #777;
             font-size: 11px;
-            letter-spacing: 4px;
-            opacity: 0.55;
+            letter-spacing: 6px;
+            margin-top: 10px;
         }
 
-        body.launched .launch-btn:hover {
-            opacity: 1;
+        /* ---- CHAT ---- */
+        .chat-wrap {
+            width: 100%;
+            max-width: 700px;
+            margin-top: 40px;
+        }
+
+        .chat-log {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 50vh;
+            overflow-y: auto;
+            margin-bottom: 14px;
+            padding-right: 4px;
+        }
+
+        .chat-log:empty {
+            display: none;
+        }
+
+        .msg {
+            max-width: 85%;
+            padding: 11px 15px;
+            border-radius: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .msg.user {
+            align-self: flex-end;
+            background: #ff1a1a;
+            color: #000;
+            font-weight: 500;
+        }
+
+        .msg.assistant {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #e5e5e8;
+        }
+
+        .msg.thinking {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            color: #888;
+            font-style: italic;
+        }
+
+        .chatbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 8px 8px 8px 20px;
+        }
+
+        .chatbox:focus-within {
+            border-color: rgba(255, 26, 26, 0.5);
+        }
+
+        .chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #e5e5e8;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            padding: 11px 0;
+        }
+
+        .chat-input::placeholder {
+            color: #666;
+        }
+
+        .chat-send {
+            background: #ff1a1a;
+            color: #fff;
+            border: none;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            font-size: 15px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: transform 0.15s ease, opacity 0.15s ease;
+        }
+
+        .chat-send:hover {
+            transform: scale(1.05);
+        }
+
+        .chat-send:disabled {
+            opacity: 0.4;
+            cursor: default;
+            transform: none;
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        .pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #999;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 7px 14px;
+            border-radius: 20px;
+            background: transparent;
+            cursor: pointer;
+            transition: border-color 0.15s ease, color 0.15s ease;
+        }
+
+        .pill:hover {
+            border-color: #ff1a1a;
+            color: #fff;
+        }
+
+        /* ---- TOOLS SECTION ---- */
+        .tools-heading {
+            font-family: 'DotGothic16', monospace;
+            font-size: 24px;
+            letter-spacing: 5px;
+            color: #fff;
+            text-shadow: 0 0 12px rgba(255, 255, 255, 0.5);
+            margin-top: 70px;
+            margin-bottom: 28px;
+            text-align: center;
+        }
+
+        .tools-heading .accent {
+            color: #ff1a1a;
+            text-shadow: 0 0 12px rgba(255, 26, 26, 0.6);
         }
 
         .apps {
             width: 100%;
-            max-width: 900px;
-            padding: 0 24px 80px;
-            margin-top: 56px;
+            max-width: 980px;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 16px;
-            opacity: 0;
-            transform: translateY(24px);
-            pointer-events: none;
-            transition: opacity 0.6s ease 0.35s, transform 0.6s ease 0.35s;
-        }
-
-        body.launched .apps {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
         }
 
         .app-card {
             position: relative;
             background: #0a0a0a;
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 6px;
-            padding: 24px 22px;
+            border-radius: 8px;
+            padding: 22px 20px;
             text-decoration: none;
             color: inherit;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
             transition: border-color 0.2s ease, transform 0.2s ease;
         }
 
         .app-card.active:hover {
             border-color: rgba(255, 26, 26, 0.6);
             transform: translateY(-3px);
-            box-shadow: 0 0 24px rgba(255, 26, 26, 0.15);
+            box-shadow: 0 0 20px rgba(255, 26, 26, 0.12);
         }
 
         .app-card.disabled {
-            opacity: 0.45;
+            opacity: 0.4;
             cursor: default;
         }
 
         .app-card.ghost {
-            opacity: 0.3;
+            opacity: 0.28;
             border-style: dashed;
+        }
+
+        .app-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            background: rgba(255, 26, 26, 0.12);
+            color: #ff4444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'DotGothic16', monospace;
+            font-size: 13px;
+            margin-bottom: 4px;
         }
 
         .app-name {
             font-family: 'DotGothic16', monospace;
-            font-size: 16px;
-            letter-spacing: 2px;
+            font-size: 15px;
+            letter-spacing: 1.5px;
             color: #fff;
         }
 
         .app-desc {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
+            font-size: 11.5px;
             line-height: 1.5;
             color: #888;
         }
 
         .app-tag {
             position: absolute;
-            top: 18px;
-            right: 18px;
+            top: 16px;
+            right: 16px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 9px;
             letter-spacing: 2px;
@@ -228,67 +285,14 @@
         }
 
         @media (max-width: 600px) {
-            .hero {
-                padding-top: 35vh;
-            }
-
-            body.launched .hero {
-                padding-top: 24px;
-            }
-
-            .title {
-                font-size: 32px;
-                letter-spacing: 5px;
-            }
-
-            body.launched .title {
-                font-size: 20px;
-                letter-spacing: 3px;
-            }
-
-            .subtitle {
-                font-size: 10px;
-                letter-spacing: 3px;
-                margin-top: 12px;
-            }
-
-            .launch-btn {
-                margin-top: 32px;
-                padding: 14px 36px;
-                font-size: 13px;
-                letter-spacing: 4px;
-                min-height: 44px;
-            }
-
-            body.launched .launch-btn {
-                margin-top: 14px;
-                padding: 10px 24px;
-                font-size: 10px;
-                letter-spacing: 2px;
-                min-height: 38px;
-            }
-
-            .apps {
-                grid-template-columns: 1fr;
-                padding: 0 16px 60px;
-                margin-top: 32px;
-                gap: 12px;
-            }
-
-            .app-card {
-                padding: 18px 16px;
-            }
-        }
-
-        @media (max-width: 360px) {
             .title {
                 font-size: 26px;
-                letter-spacing: 3px;
+                letter-spacing: 4px;
             }
 
-            body.launched .title {
-                font-size: 18px;
-                letter-spacing: 2px;
+            .tools-heading {
+                font-size: 19px;
+                letter-spacing: 3px;
             }
         }
     </style>
@@ -297,52 +301,97 @@
 <body>
     <canvas id="starfield"></canvas>
 
-    <div class="scene">
-        <div class="hero">
-            <div class="title">NATIVE<span class="accent">SYNC</span></div>
-            <div class="subtitle">MULTIPURPOSE TOOL</div>
-            <button class="launch-btn" id="launchBtn">LAUNCH</button>
+    <div class="page">
+        <div class="title">NATIVE<span class="accent">SYNC</span></div>
+        <div class="subtitle">MULTIPURPOSE TOOL</div>
+
+        <div class="chat-wrap">
+            <div class="chat-log" id="chatLog"></div>
+
+            <div class="chatbox">
+                <input type="text" class="chat-input" id="chatInput"
+                    placeholder="Ask NativeSync to summarize, draft, triage, or manage anything...">
+                <button class="chat-send" id="chatSend" aria-label="Send">→</button>
+            </div>
+
+            <div class="suggestions" id="suggestions">
+                <button class="pill" onclick="fillAndSend('Summarize this PDF')">Summarize this PDF</button>
+                <button class="pill" onclick="fillAndSend('Draft an email to my client')">Draft an email to my
+                    client</button>
+                <button class="pill" onclick="fillAndSend('Triage my inbox')">Triage my inbox</button>
+                <button class="pill" onclick="fillAndSend('What\'s today\'s top tech news?')">What's today's top tech
+                    news?</button>
+            </div>
         </div>
 
+        <div class="tools-heading">TOOLS</div>
+
         <div class="apps">
-
-
             <a href="/web-summarizer" class="app-card active">
-                <div class="app-name">WEB SUMMARIZER</div>
-                <div class="app-desc">Drop in a link, get the key points back in seconds.</div>
+                <div class="app-icon">W</div>
+                <div class="app-name">Wikipedia SUMMARIZER</div>
+                <div class="app-desc">Paste any link, get the key points back in seconds.</div>
             </a>
 
             <a href="/doc-summarizer" class="app-card active">
-                <div class="app-name">DOCUMENT / PDF Q&amp;A</div>
+                <div class="app-icon">D</div>
+                <div class="app-name">DOCUMENT Q&amp;A</div>
                 <div class="app-desc">Upload a PDF, get a summary or ask it questions directly.</div>
             </a>
 
             <a href="/youtube-summarizer" class="app-card active">
+                <div class="app-icon">Y</div>
                 <div class="app-name">YOUTUBE SUMMARIZER</div>
                 <div class="app-desc">Paste a video link, get the key points without watching it.</div>
             </a>
 
+            <a href="/compose" class="app-card active">
+                <div class="app-icon">C</div>
+                <div class="app-name">COMPOSE MAIL</div>
+                <div class="app-desc">Tell it what to send and to who — it drafts and sends the email.</div>
+            </a>
+
             <a href="/email-triage" class="app-card active">
+                <div class="app-icon">E</div>
                 <div class="app-name">EMAIL TRIAGE</div>
                 <div class="app-desc">Auto-draft replies and sort your inbox by priority.</div>
             </a>
 
-            <div class="app-card disabled">
-                <div class="app-tag">SOON</div>
+            <a href="/doc-generator" class="app-card active">
+                <div class="app-icon">D</div>
+                <div class="app-name">DOCUMENT GENERATOR</div>
+                <div class="app-desc">Describe it or paste your notes — get a formatted Word doc back.</div>
+            </a>
+
+            <a href="/sheet-generator" class="app-card active">
+                <div class="app-icon">S</div>
+                <div class="app-name">SPREADSHEET GENERATOR</div>
+                <div class="app-desc">Describe it or paste your data — get a formatted Excel file back.</div>
+            </a>
+
+            <a href="/yt-downloader" class="app-card active">
+                <div class="app-icon">Y</div>
+                <div class="app-name">YOUTUBE DOWNLOADER</div>
+                <div class="app-desc">Paste a video link, save it as an .mp4 file.</div>
+            </a>
+
+            <a href="/calendar" class="app-card active">
+                <div class="app-icon">C</div>
                 <div class="app-name">CALENDAR / TASKS</div>
-                <div class="app-desc">Manage your schedule and to-dos through one dashboard.</div>
-            </div>
+                <div class="app-desc">Describe an event in plain language — it gets created for you.</div>
+            </a>
+
+            <a href="/exif" class="app-card active">
+                <div class="app-icon">P</div>
+                <div class="app-name">PHOTO EXIF</div>
+                <div class="app-desc">Upload a photo, see the device that took it and where it was shot.</div>
+            </a>
 
             <div class="app-card disabled">
                 <div class="app-tag">SOON</div>
+                <div class="app-icon">D</div>
                 <div class="app-name">DAILY DIGEST</div>
                 <div class="app-desc">One briefing combining your mail, calendar, and summaries.</div>
-            </div>
-
-            <div class="app-card disabled">
-                <div class="app-tag">SOON</div>
-                <div class="app-name">COMMAND ROUTER</div>
-                <div class="app-desc">Type what you need — AI figures out which feature handles it.</div>
             </div>
 
             <div class="app-card ghost">
@@ -353,34 +402,23 @@
     </div>
 
     <script>
+        // --- starfield, unchanged from the rest of the site ---
         const canvas = document.getElementById('starfield');
         const ctx = canvas.getContext('2d');
-        let isMobile = window.innerWidth < 768;
-
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            const newIsMobile = window.innerWidth < 768;
-            if (newIsMobile !== isMobile) {
-                isMobile = newIsMobile;
-                initStars();
-            }
-        }
-        window.addEventListener('resize', resize);
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
         resize();
+        window.addEventListener('resize', resize);
 
         let stars = [];
-
+        const numStars = 400;
         function initStars() {
             stars = [];
-            const numStars = isMobile ? 140 : 400;
             for (let i = 0; i < numStars; i++) {
-                const isRed = Math.random() < 0.35;
                 stars.push({
                     x: (Math.random() - 0.5) * canvas.width,
                     y: (Math.random() - 0.5) * canvas.height,
                     z: Math.random() * canvas.width,
-                    isRed: isRed
+                    isRed: Math.random() < 0.35
                 });
             }
         }
@@ -389,14 +427,10 @@
         function draw() {
             ctx.fillStyle = 'rgba(0,0,0,0.3)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            const cx = canvas.width / 2;
-            const cy = canvas.height / 2;
-
+            const cx = canvas.width / 2, cy = canvas.height / 2;
             for (let s of stars) {
                 const prevZ = s.z;
                 s.z -= 6;
-
                 if (s.z <= 0) {
                     s.x = (Math.random() - 0.5) * canvas.width;
                     s.y = (Math.random() - 0.5) * canvas.height;
@@ -404,25 +438,21 @@
                     s.isRed = Math.random() < 0.35;
                     continue;
                 }
-
                 const sx = (s.x / s.z) * canvas.width + cx;
                 const sy = (s.y / s.z) * canvas.width + cy;
                 const px = (s.x / prevZ) * canvas.width + cx;
                 const py = (s.y / prevZ) * canvas.width + cy;
-
                 const size = (1 - s.z / canvas.width) * 1.8;
                 const alpha = (1 - s.z / canvas.width) * 0.7;
-
                 if (s.isRed) {
                     ctx.strokeStyle = `rgba(255,20,20,${Math.min(alpha * 1.3, 1)})`;
-                    ctx.shadowBlur = isMobile ? 0 : 16;
+                    ctx.shadowBlur = 16;
                     ctx.shadowColor = 'rgba(255,0,60,1)';
                 } else {
                     ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
                     ctx.shadowBlur = 0;
                     ctx.shadowColor = 'transparent';
                 }
-
                 ctx.lineWidth = size;
                 ctx.beginPath();
                 ctx.moveTo(px, py);
@@ -430,13 +460,81 @@
                 ctx.stroke();
             }
             ctx.shadowBlur = 0;
-
             requestAnimationFrame(draw);
         }
         draw();
 
-        document.getElementById('launchBtn').addEventListener('click', () => {
-            document.body.classList.add('launched');
+        // --- chat logic ---
+        const chatLog = document.getElementById('chatLog');
+        const chatInput = document.getElementById('chatInput');
+        const chatSend = document.getElementById('chatSend');
+        const suggestions = document.getElementById('suggestions');
+
+        let history = []; // [{role: 'user'|'assistant', content: str}]
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function appendMessage(role, text) {
+            const div = document.createElement('div');
+            div.className = `msg ${role}`;
+            div.innerHTML = escapeHtml(text);
+            chatLog.appendChild(div);
+            chatLog.scrollTop = chatLog.scrollHeight;
+            return div;
+        }
+
+        function fillAndSend(text) {
+            chatInput.value = text;
+            sendMessage();
+        }
+
+        async function sendMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            suggestions.style.display = 'none';
+            appendMessage('user', text);
+            history.push({ role: 'user', content: text });
+
+            chatInput.value = '';
+            chatInput.disabled = true;
+            chatSend.disabled = true;
+
+            const thinkingEl = appendMessage('thinking', 'Thinking...');
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: text, history: history.slice(0, -1) })
+                });
+                const data = await res.json();
+
+                thinkingEl.remove();
+
+                if (data.status === 'success') {
+                    appendMessage('assistant', data.reply);
+                    history.push({ role: 'assistant', content: data.reply });
+                } else {
+                    appendMessage('assistant', 'Something went wrong: ' + (data.error || 'unknown error'));
+                }
+            } catch (e) {
+                thinkingEl.remove();
+                appendMessage('assistant', 'Could not reach NativeSync. Make sure the server is running.');
+            }
+
+            chatInput.disabled = false;
+            chatSend.disabled = false;
+            chatInput.focus();
+        }
+
+        chatSend.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') sendMessage();
         });
     </script>
 </body>
